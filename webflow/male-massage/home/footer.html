@@ -1,12 +1,203 @@
-<script id="mms-home-r1-js">
-(function(){'use strict';var root=document.getElementById('mms-home-r1');if(!root||root.dataset.ready==='1')return;root.dataset.ready='1';document.documentElement.classList.add('ms-r1-js');document.documentElement.setAttribute('data-mmd-world','mms');
-var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches,booking=root.dataset.booking||'/male-massage/member/mms-booking';
-var langBtn=root.querySelector('.ms-lang'),langList=root.querySelector('.ms-langlist'),langLabel=langBtn&&langBtn.querySelector('span');function setLang(l){if(['th','en','zh'].indexOf(l)<0)l='th';root.dataset.lang=l;if(langLabel)langLabel.textContent=l==='zh'?'中文':l.toUpperCase();document.documentElement.lang=l==='zh'?'zh-Hans':l;try{localStorage.setItem('mms_lang',l)}catch(_){ }if(langList)langList.hidden=true;if(langBtn)langBtn.setAttribute('aria-expanded','false')}try{setLang(localStorage.getItem('mms_lang')||'th')}catch(_){setLang('th')}if(langBtn)langBtn.addEventListener('click',function(){var open=langList.hidden;langList.hidden=!open;langBtn.setAttribute('aria-expanded',String(open))});root.querySelectorAll('[data-set-lang]').forEach(function(b){b.addEventListener('click',function(){setLang(b.dataset.setLang)})});
-var menu=root.querySelector('.ms-menu'),nav=root.querySelector('.ms-navlinks');if(menu&&nav){menu.addEventListener('click',function(){var open=!nav.classList.contains('is-open');nav.classList.toggle('is-open',open);menu.setAttribute('aria-expanded',String(open))});nav.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){nav.classList.remove('is-open');menu.setAttribute('aria-expanded','false')})})}
-var selected=[],max=3,cards=[].slice.call(root.querySelectorAll('[data-skill]')),count=root.querySelector('[data-count]'),status=root.querySelector('[data-status]'),match=root.querySelector('.ms-match a');try{var saved=JSON.parse(sessionStorage.getItem('mms_selected_skills')||'[]');if(Array.isArray(saved))selected=saved.filter(function(v){return cards.some(function(c){return c.dataset.skill===v})}).slice(0,max)}catch(_){ }function sync(){cards.forEach(function(c){c.setAttribute('aria-pressed',String(selected.indexOf(c.dataset.skill)>-1))});if(count)count.textContent=selected.length+' / '+max;if(status){var t={th:selected.length?'พร้อมให้ MMS + AI ช่วย Match':'เลือกอย่างน้อย 1 Skill',en:selected.length?'Ready to match':'Choose at least one skill',zh:selected.length?'可以开始匹配':'请至少选择一项'};status.textContent=t[root.dataset.lang]||t.th}if(match){if(selected.length){match.removeAttribute('aria-disabled');match.href=booking+'?skills='+encodeURIComponent(selected.join(','))}else{match.setAttribute('aria-disabled','true');match.href=booking}}try{sessionStorage.setItem('mms_selected_skills',JSON.stringify(selected))}catch(_){ }}cards.forEach(function(c){c.addEventListener('click',function(){var v=c.dataset.skill,i=selected.indexOf(v);if(i>-1)selected.splice(i,1);else if(selected.length<max)selected.push(v);else{c.animate([{transform:'translateX(-3px)'},{transform:'translateX(3px)'},{transform:'none'}],{duration:220});return}sync()})});root.querySelectorAll('[data-set-lang]').forEach(function(b){b.addEventListener('click',function(){setTimeout(sync,0)})});sync();
-var area=root.querySelector('.ms-area');if(area)area.addEventListener('submit',function(e){e.preventDefault();var v=area.elements.area.value,url=booking+(v?'?area='+encodeURIComponent(v):'');window.location.href=url});
-var details=[].slice.call(root.querySelectorAll('.ms-accordions details'));details.forEach(function(d){d.addEventListener('toggle',function(){if(d.open)details.forEach(function(o){if(o!==d)o.open=false})})});
-var reveals=[].slice.call(root.querySelectorAll('.ms-reveal'));if(!('IntersectionObserver'in window)||reduce){reveals.forEach(function(el){el.classList.add('is-in')})}else{var io=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('is-in');io.unobserve(e.target)}})},{threshold:.12,rootMargin:'0px 0px -7%'});reveals.forEach(function(el){io.observe(el)})}
-document.addEventListener('click',function(e){if(langList&&!langList.hidden&&!root.querySelector('.ms-navtools').contains(e.target)){langList.hidden=true;langBtn.setAttribute('aria-expanded','false')}});document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(langList)langList.hidden=true;if(nav)nav.classList.remove('is-open');if(langBtn)langBtn.setAttribute('aria-expanded','false');if(menu)menu.setAttribute('aria-expanded','false')}});
+<script id="mms-home-lv7-js">
+(function(){
+  'use strict';
+  var root=document.getElementById('mms-home-lv7');
+  if(!root||root.dataset.ready==='1')return;
+  root.dataset.ready='1';
+  document.documentElement.classList.add('mmh-js');
+  document.documentElement.setAttribute('data-mmd-world','mms');
+
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var booking=root.dataset.booking||'/male-massage/member/mms-booking';
+  var labels={
+    th:{overview:'ภาพรวม',services:'เลือกบริการ',setting:'เลือกสถานที่',standard:'มาตรฐาน MMS',process:'ขั้นตอนใช้งาน',coverage:'พื้นที่บริการ',faq:'คำถามสำคัญ',booking:'เริ่มจอง'},
+    en:{overview:'Overview',services:'Find your care',setting:'Choose setting',standard:'MMS standard',process:'How it works',coverage:'Coverage',faq:'Good to know',booking:'Start booking'},
+    zh:{overview:'概览',services:'选择服务',setting:'选择地点',standard:'MMS 标准',process:'使用流程',coverage:'服务地区',faq:'重要信息',booking:'开始预约'}
+  };
+  var langBtn=root.querySelector('.mmh-lang');
+  var langList=root.querySelector('.mmh-langlist');
+  var langLabel=langBtn&&langBtn.querySelector('span');
+  function setLang(lang){
+    if(['th','en','zh'].indexOf(lang)<0)lang='th';
+    root.dataset.lang=lang;
+    if(langLabel)langLabel.textContent=lang==='zh'?'中文':lang.toUpperCase();
+    document.documentElement.lang=lang==='zh'?'zh-Hans':lang;
+    try{localStorage.setItem('mms_lang',lang);}catch(_e){}
+    if(langList)langList.hidden=true;
+    if(langBtn)langBtn.setAttribute('aria-expanded','false');
+    if(cards)syncSkills();
+    if(typeof activeIndex==='number')syncChapter(activeIndex);
+  }
+  try{setLang(localStorage.getItem('mms_lang')||'th');}catch(_e){setLang('th');}
+  if(langBtn&&langList){
+    langBtn.addEventListener('click',function(){var open=langList.hidden;langList.hidden=!open;langBtn.setAttribute('aria-expanded',String(open));});
+    root.querySelectorAll('[data-set-lang]').forEach(function(button){button.addEventListener('click',function(){setLang(button.dataset.setLang);});});
+  }
+
+  var cards=Array.prototype.slice.call(root.querySelectorAll('[data-skill]'));
+  var selected=[];
+  var max=3;
+  var count=root.querySelector('[data-count]');
+  var status=root.querySelector('[data-status]');
+  var match=root.querySelector('.mmh-match a');
+  try{
+    var saved=JSON.parse(sessionStorage.getItem('mms_selected_skills')||'[]');
+    if(Array.isArray(saved))selected=saved.filter(function(value){return cards.some(function(card){return card.dataset.skill===value;});}).slice(0,max);
+  }catch(_e){}
+  function bookingUrl(extra){
+    var url=new URL(booking,window.location.origin);
+    Object.keys(extra||{}).forEach(function(key){if(extra[key])url.searchParams.set(key,extra[key]);});
+    return url.pathname+url.search;
+  }
+  function syncSkills(){
+    cards.forEach(function(card){card.setAttribute('aria-pressed',String(selected.indexOf(card.dataset.skill)>-1));});
+    if(count)count.textContent=selected.length+' / '+max;
+    var text={th:selected.length?'พร้อมให้ MMS + AI ช่วย Match':'เลือกอย่างน้อย 1 Skill',en:selected.length?'Ready to match':'Choose at least one skill',zh:selected.length?'可以开始匹配':'请至少选择一项'};
+    if(status)status.textContent=text[root.dataset.lang]||text.th;
+    if(match){
+      if(selected.length){match.removeAttribute('aria-disabled');match.href=bookingUrl({skills:selected.join(',')});}
+      else{match.setAttribute('aria-disabled','true');match.href=booking;}
+    }
+    try{sessionStorage.setItem('mms_selected_skills',JSON.stringify(selected));}catch(_e){}
+  }
+  cards.forEach(function(card){
+    card.addEventListener('click',function(){
+      var value=card.dataset.skill,index=selected.indexOf(value);
+      if(index>-1)selected.splice(index,1);
+      else if(selected.length<max)selected.push(value);
+      else{
+        if(card.animate&&!reduce)card.animate([{transform:'translateX(-3px)'},{transform:'translateX(3px)'},{transform:'none'}],{duration:220});
+        return;
+      }
+      syncSkills();
+    });
+  });
+  syncSkills();
+
+  var areaForm=root.querySelector('.mmh-area');
+  if(areaForm)areaForm.addEventListener('submit',function(event){
+    event.preventDefault();
+    var area=areaForm.elements.area.value;
+    if(!area){areaForm.elements.area.focus();return;}
+    window.location.assign(bookingUrl({area:area,skills:selected.join(',')}));
+  });
+
+  var details=Array.prototype.slice.call(root.querySelectorAll('.mmh-accordions details'));
+  details.forEach(function(detail){detail.addEventListener('toggle',function(){if(detail.open)details.forEach(function(other){if(other!==detail)other.open=false;});});});
+
+  root.querySelectorAll('[data-rail]').forEach(function(rail){
+    var meter=rail.parentElement.querySelector('[data-rail-progress]');
+    if(!meter)return;
+    function update(){var maxScroll=rail.scrollWidth-rail.clientWidth;meter.style.setProperty('--rail-progress',String(maxScroll>0?Math.max(.08,rail.scrollLeft/maxScroll):1));}
+    rail.addEventListener('scroll',function(){window.requestAnimationFrame(update);},{passive:true});
+    window.addEventListener('resize',update,{passive:true});
+    update();
+  });
+
+  var reveals=Array.prototype.slice.call(root.querySelectorAll('.mmh-reveal'));
+  if(!('IntersectionObserver' in window)||reduce)reveals.forEach(function(element){element.classList.add('is-in');});
+  else{
+    var revealObserver=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('is-in');revealObserver.unobserve(entry.target);}});},{threshold:.1,rootMargin:'0px 0px -7%'});
+    reveals.forEach(function(element){revealObserver.observe(element);});
+  }
+
+  var progress=root.querySelector('.mmh-progress i');
+  function updateProgress(){var maxScroll=document.documentElement.scrollHeight-window.innerHeight;progress.style.transform='scaleX('+Math.max(0,Math.min(1,maxScroll>0?window.scrollY/maxScroll:0))+')';}
+  window.addEventListener('scroll',function(){window.requestAnimationFrame(updateProgress);},{passive:true});
+  window.addEventListener('resize',updateProgress,{passive:true});
+  updateProgress();
+
+  var chapters=['overview','services','standard','process','coverage','faq','booking'];
+  var chapterElements=chapters.map(function(id){return root.querySelector('#'+id);}).filter(Boolean);
+  var currentNo=root.querySelector('[data-current-no]');
+  var currentLabel=root.querySelector('[data-current-label]');
+  var prev=root.querySelector('.mmh-branchprev');
+  var next=root.querySelector('.mmh-branchnext');
+  var activeIndex=0;
+  function syncChapter(index){
+    activeIndex=Math.max(0,Math.min(chapters.length-1,index||0));
+    var id=chapters[activeIndex],lang=root.dataset.lang||'th';
+    if(currentNo)currentNo.textContent=String(activeIndex+1).padStart(2,'0')+' / '+String(chapters.length).padStart(2,'0');
+    if(currentLabel)currentLabel.textContent=(labels[lang]&&labels[lang][id])||id;
+    if(prev)prev.disabled=activeIndex===0;
+    if(next)next.disabled=activeIndex===chapters.length-1;
+  }
+  function go(id,push){
+    var target=root.querySelector('#'+id);
+    if(!target)return;
+    closeSheet(false);
+    target.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+    if(push!==false&&history.pushState)history.pushState({mmhChapter:id},'',window.location.pathname+window.location.search+'#'+id);
+  }
+  if(prev)prev.addEventListener('click',function(){if(activeIndex>0)go(chapters[activeIndex-1]);});
+  if(next)next.addEventListener('click',function(){if(activeIndex<chapters.length-1)go(chapters[activeIndex+1]);});
+  if('IntersectionObserver' in window){
+    var chapterObserver=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){var index=chapters.indexOf(entry.target.id);if(index>-1)syncChapter(index);}});},{rootMargin:'-34% 0px -56%',threshold:0});
+    chapterElements.forEach(function(element){chapterObserver.observe(element);});
+  }
+
+  var menuButton=root.querySelector('.mmh-branchmenu');
+  var sheet=root.querySelector('.mmh-sheet');
+  var backdrop=root.querySelector('.mmh-backdrop');
+  var closeButton=root.querySelector('.mmh-sheetclose');
+  var backButton=root.querySelector('.mmh-sheetback');
+  var sheetTitle=root.querySelector('[data-sheet-title]');
+  var lastFocus=null,currentPanel='main',startY=0;
+  function setPanel(name,direction){
+    var panel=root.querySelector('[data-panel="'+name+'"]');
+    if(!panel)return;
+    root.querySelectorAll('.mmh-sheetpanel').forEach(function(item){item.classList.toggle('is-active',item===panel);});
+    currentPanel=name;
+    if(backButton)backButton.hidden=name==='main';
+    if(sheetTitle){
+      var titles={th:name==='main'?'สารบัญหน้านี้':'เลือกบริการ',en:name==='main'?'Page chapters':'Find your care',zh:name==='main'?'页面目录':'选择服务'};
+      sheetTitle.textContent=titles[root.dataset.lang]||titles.th;
+    }
+    if(panel.animate&&!reduce)panel.animate([{opacity:0,transform:'translateX('+(direction==='back'?'-18px':'18px')+')'},{opacity:1,transform:'none'}],{duration:300,easing:'cubic-bezier(.22,1,.36,1)'});
+    var first=panel.querySelector('button,a');if(first)window.setTimeout(function(){first.focus();},reduce?0:120);
+  }
+  function openSheet(){
+    if(!sheet||!backdrop)return;
+    lastFocus=document.activeElement;
+    backdrop.hidden=false;
+    window.requestAnimationFrame(function(){backdrop.classList.add('is-open');sheet.classList.add('is-open');});
+    sheet.setAttribute('aria-hidden','false');
+    menuButton.setAttribute('aria-expanded','true');
+    document.documentElement.classList.add('mmh-sheet-open');
+    setPanel('main');
+  }
+  function closeSheet(returnFocus){
+    if(!sheet||!backdrop)return;
+    sheet.classList.remove('is-open');backdrop.classList.remove('is-open');
+    sheet.setAttribute('aria-hidden','true');menuButton.setAttribute('aria-expanded','false');
+    document.documentElement.classList.remove('mmh-sheet-open');
+    window.setTimeout(function(){backdrop.hidden=true;},reduce?0:340);
+    if(returnFocus!==false&&lastFocus&&lastFocus.focus)lastFocus.focus();
+  }
+  if(menuButton)menuButton.addEventListener('click',openSheet);
+  if(closeButton)closeButton.addEventListener('click',function(){closeSheet(true);});
+  if(backdrop)backdrop.addEventListener('click',function(){closeSheet(true);});
+  if(backButton)backButton.addEventListener('click',function(){setPanel('main','back');});
+  root.querySelectorAll('[data-open-panel]').forEach(function(button){button.addEventListener('click',function(){setPanel(button.dataset.openPanel,'forward');});});
+  root.querySelectorAll('[data-go]').forEach(function(button){button.addEventListener('click',function(){go(button.dataset.go);});});
+  if(sheet){
+    sheet.addEventListener('touchstart',function(event){startY=event.touches[0].clientY;},{passive:true});
+    sheet.addEventListener('touchend',function(event){if(event.changedTouches[0].clientY-startY>75)closeSheet(true);},{passive:true});
+  }
+  document.addEventListener('keydown',function(event){
+    if(event.key==='Escape'){if(langList)langList.hidden=true;if(sheet&&sheet.classList.contains('is-open'))closeSheet(true);}
+    if(event.key==='Tab'&&sheet&&sheet.classList.contains('is-open')){
+      var focusable=Array.prototype.slice.call(sheet.querySelectorAll('button:not([hidden]):not([disabled]),a[href]')).filter(function(item){return item.offsetParent!==null;});
+      if(!focusable.length)return;
+      var first=focusable[0],last=focusable[focusable.length-1];
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+    }
+  });
+  document.addEventListener('click',function(event){if(langList&&!langList.hidden&&!root.querySelector('.mmh-lang-wrap').contains(event.target)){langList.hidden=true;if(langBtn)langBtn.setAttribute('aria-expanded','false');}});
+  window.addEventListener('popstate',function(){var id=window.location.hash.slice(1);if(id&&root.querySelector('#'+id))go(id,false);});
+  if(window.location.hash&&root.querySelector(window.location.hash))window.setTimeout(function(){go(window.location.hash.slice(1),false);},80);
+  syncChapter(0);
 })();
+
 </script>
